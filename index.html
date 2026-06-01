@@ -304,6 +304,15 @@ button { cursor: pointer; font-family: inherit; }
   flex-shrink: 0;
 }
 .nav-logo-badge img { height: 36px; width: auto; object-fit: contain; }
+/* CSS logo swap — dark/light, no JS flicker */
+.logo-dark  { display: block; }
+.logo-light { display: none; }
+[data-theme="light"] .logo-dark  { display: none; }
+[data-theme="light"] .logo-light { display: block; }
+.footer-logo-dark  { display: block; height: 32px; width: auto; object-fit: contain; }
+.footer-logo-light { display: none;  height: 32px; width: auto; object-fit: contain; }
+[data-theme="light"] .footer-logo-dark  { display: none; }
+[data-theme="light"] .footer-logo-light { display: block; }
 .nav-logo-name {
   font-size: 14px; font-weight: 700;
   color: rgba(255,255,255,.55); letter-spacing: -.1px;
@@ -1836,7 +1845,6 @@ button { cursor: pointer; font-family: inherit; }
       <a href="#contact">Contact</a>
     </nav>
     <div class="nav-right">
-      <span class="nav-client-tag">Fristine Tech</span>
       <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" title="Toggle light / dark">
         <!-- Moon icon (shown in dark mode) -->
         <svg id="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
@@ -3261,11 +3269,11 @@ button { cursor: pointer; font-family: inherit; }
         <div class="cf-row">
           <div class="cf-group">
             <label>First Name *</label>
-            <input type="text" placeholder="Tanuj" required>
+            <input type="text" placeholder="John" required>
           </div>
           <div class="cf-group">
             <label>Last Name *</label>
-            <input type="text" placeholder="S." required>
+            <input type="text" placeholder="Doe." required>
           </div>
         </div>
         <div class="cf-group">
@@ -3275,15 +3283,15 @@ button { cursor: pointer; font-family: inherit; }
         <div class="cf-row">
           <div class="cf-group">
             <label>Company Name</label>
-            <input type="text" placeholder="Fristine Tech">
+            <input type="text" placeholder="Company Name">
           </div>
           <div class="cf-group">
             <label>Team Size</label>
             <select>
               <option value="">Select size</option>
-              <option>1–10 employees</option>
-              <option>11–50 employees</option>
-              <option>51–200 employees</option>
+              <option>1-10 employees</option>
+              <option>11-50 employees</option>
+              <option>51-200 employees</option>
               <option>200+ employees</option>
             </select>
           </div>
@@ -4002,18 +4010,38 @@ document.querySelectorAll('.stat-val[data-target]').forEach(el => statsObs.obser
     if (iconMoon) iconMoon.style.display = isLight  ? 'none'  : '';
     if (iconSun)  iconSun.style.display  = isLight  ? ''      : 'none';
 
-    // Swap page logos (nav + footer): blue in light, white in dark
-    // Dock logo is always blue (light dock background)
-    document.querySelectorAll('.nav-logo-badge img, .footer-logo-img').forEach(img => {
-      img.src = isLight ? logoBlue : logoWhite;
-    });
-
-    // Simulator dock: always blue
-    const dockLogo = document.querySelector('.sim-dock-logo img');
-    if (dockLogo) dockLogo.src = logoBlue;
+    // CSS classes handle logo visibility — no src swap needed
   }
 
   btn?.addEventListener('click', () => applyTheme(theme === 'dark' ? 'light' : 'dark'));
+
+  // ── One-time setup: inject blue logo imgs + favicon ──
+  // Nav badge
+  const nb = document.querySelector('.nav-logo-badge');
+  if (nb && !nb.querySelector('.logo-light')) {
+    const di = nb.querySelector('img');
+    if (di) di.classList.add('logo-dark');
+    const li = document.createElement('img');
+    li.src = logoBlue; li.alt = 'FI Digital';
+    li.className = 'logo-light';
+    li.style.cssText = 'height:36px;width:auto;object-fit:contain;';
+    nb.appendChild(li);
+  }
+  // Footer logo
+  const fr = document.querySelector('.footer-logo-row');
+  if (fr && !fr.querySelector('.footer-logo-light')) {
+    const fd = fr.querySelector('img');
+    if (fd) { fd.className = ''; fd.classList.add('footer-logo-dark', 'footer-logo-img'); }
+    const fl = document.createElement('img');
+    fl.src = logoBlue; fl.alt = 'FI Digital';
+    fl.className = 'footer-logo-light';
+    const fa = fr.querySelector('a') || fr;
+    fa.appendChild(fl);
+  }
+  // Favicon
+  const fav = document.createElement('link');
+  fav.rel = 'icon'; fav.type = 'image/png'; fav.href = logoBlue;
+  document.head.appendChild(fav);
 
   // Apply saved theme on load
   applyTheme(theme);
