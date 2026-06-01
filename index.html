@@ -4002,16 +4002,13 @@ document.querySelectorAll('.stat-val[data-target]').forEach(el => statsObs.obser
     if (iconMoon) iconMoon.style.display = isLight  ? 'none'  : '';
     if (iconSun)  iconSun.style.display  = isLight  ? ''      : 'none';
 
-    // Swap all logo images on the page
-    document.querySelectorAll('img[src*="fi-digital"]').forEach(img => {
-      if (isLight) {
-        img.src = img.src.includes('white') ? img.src.replace('fi-digital-white', 'fi-digital-blue') : img.src;
-      } else {
-        img.src = img.src.includes('blue') ? img.src.replace('fi-digital-blue', 'fi-digital-white') : img.src;
-      }
+    // Swap page logos (nav + footer): blue in light, white in dark
+    // Dock logo is always blue (light dock background)
+    document.querySelectorAll('.nav-logo-badge img, .footer-logo-img').forEach(img => {
+      img.src = isLight ? logoBlue : logoWhite;
     });
 
-    // Keep simulator dock logo always on blue (light dock bg)
+    // Simulator dock: always blue
     const dockLogo = document.querySelector('.sim-dock-logo img');
     if (dockLogo) dockLogo.src = logoBlue;
   }
