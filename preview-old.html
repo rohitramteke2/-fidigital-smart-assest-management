@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AssetFlow Pro — Platform Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  background: radial-gradient(ellipse at 30% 20%, #1a1040 0%, #0d0d1a 50%, #000510 100%);
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;font-family:'Inter',-apple-system,sans-serif;
+  padding:40px 20px;gap:24px;
+}
+
+/* ── Page branding ── */
+.brand-header{text-align:center;color:#fff}
+.brand-header h1{font-size:28px;font-weight:800;letter-spacing:-.5px;
+  background:linear-gradient(135deg,#fff 40%,rgba(0,122,255,.8));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.brand-header p{font-size:13px;color:rgba(255,255,255,.45);margin-top:6px;font-weight:500;letter-spacing:.04em;text-transform:uppercase}
+
+/* ── Browser window ── */
+.browser{
+  width:1100px;height:660px;border-radius:14px;overflow:hidden;flex-shrink:0;
+  box-shadow:0 60px 120px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.08),
+             0 0 80px rgba(0,122,255,.08);
+}
+.browser-chrome{
+  height:38px;background:linear-gradient(180deg,#3a3a3c,#2c2c2e);
+  display:flex;align-items:center;padding:0 16px;gap:12px;
+  border-bottom:1px solid rgba(0,0,0,.4);
+}
+.traffic-lights{display:flex;gap:7px}
+.tl{width:13px;height:13px;border-radius:50%}
+.tl-red{background:#ff5f57}.tl-yellow{background:#ffbd2e}.tl-green{background:#28c840}
+.url-bar{
+  flex:1;max-width:320px;margin:0 auto;
+  background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1);
+  border-radius:7px;height:22px;display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:rgba(255,255,255,.5);letter-spacing:.01em;gap:5px;
+}
+.url-bar .lock{color:rgba(0,200,100,.7);font-size:10px}
+
+/* ── App viewport ── */
+.app{
+  display:flex;width:100%;height:622px;
+  background:#F2F2F7;position:relative;overflow:hidden;
+}
+
+/* Background orbs */
+.orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+.orb1{width:400px;height:400px;background:rgba(0,122,255,.08);top:-100px;right:100px;animation:orbA 8s ease-in-out infinite}
+.orb2{width:300px;height:300px;background:rgba(175,82,222,.06);bottom:-50px;left:200px;animation:orbB 10s ease-in-out infinite}
+.orb3{width:250px;height:250px;background:rgba(52,199,89,.05);top:50%;right:50px;animation:orbC 7s ease-in-out infinite}
+@keyframes orbA{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-30px,20px) scale(1.05)}}
+@keyframes orbB{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(20px,-30px) scale(.95)}}
+@keyframes orbC{0%,100%{transform:translate(0,0)}50%{transform:translate(-15px,15px) scale(1.03)}}
+
+/* ── Floating Dock ── */
+.dock{
+  width:64px;height:100%;flex-shrink:0;
+  background:rgba(20,20,24,.92);
+  backdrop-filter:blur(24px) saturate(180%);
+  border-right:1px solid rgba(255,255,255,.06);
+  display:flex;flex-direction:column;align-items:center;
+  padding:16px 0 12px;gap:4px;position:relative;z-index:10;
+}
+.dock-logo{
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,#007AFF,#5856D6);
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:800;color:#fff;margin-bottom:12px;
+  box-shadow:0 4px 12px rgba(0,122,255,.4);letter-spacing:-.5px;
+}
+.dock-sep{width:32px;height:1px;background:rgba(255,255,255,.08);margin:4px 0}
+.dock-item{
+  width:44px;height:44px;border-radius:12px;display:flex;align-items:center;
+  justify-content:center;cursor:pointer;position:relative;
+  transition:background .15s ease,transform .15s ease;
+}
+.dock-item:hover{background:rgba(255,255,255,.07);transform:scale(1.08)}
+.dock-item.active{background:linear-gradient(135deg,rgba(0,122,255,.35),rgba(88,86,214,.25));border:1px solid rgba(0,122,255,.5)}
+.dock-item svg{width:18px;height:18px;stroke:rgba(255,255,255,.5);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.dock-item.active svg{stroke:#fff}
+.dock-item .tooltip{
+  position:absolute;left:calc(100% + 10px);
+  background:rgba(20,20,24,.95);color:#fff;
+  font-size:11px;font-weight:500;padding:5px 9px;border-radius:7px;
+  white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s ease;
+  border:1px solid rgba(255,255,255,.1);
+}
+.dock-item:hover .tooltip{opacity:1}
+.dock-bottom{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:4px}
+.dock-avatar{
+  width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(135deg,#007AFF,#5856D6);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:#fff;
+}
+
+/* ── Main area ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;z-index:1}
+
+/* ── Topbar ── */
+.topbar{
+  height:52px;flex-shrink:0;padding:0 20px;
+  background:rgba(242,242,247,.72);
+  backdrop-filter:blur(20px) saturate(180%);
+  border-bottom:1px solid rgba(0,0,0,.06);
+  display:flex;align-items:center;gap:12px;
+}
+.topbar-search{
+  flex:1;max-width:300px;height:32px;
+  background:rgba(255,255,255,.7);
+  border:1px solid rgba(0,0,0,.08);border-radius:10px;
+  display:flex;align-items:center;gap:8px;padding:0 12px;
+}
+.topbar-search svg{width:14px;height:14px;stroke:#AEAEB2;flex-shrink:0;fill:none;stroke-width:2;stroke-linecap:round}
+.topbar-search span{font-size:13px;color:#AEAEB2}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.topbar-bell{
+  width:32px;height:32px;border-radius:10px;background:rgba(255,255,255,.7);
+  border:1px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;position:relative;
+}
+.topbar-bell svg{width:16px;height:16px;stroke:#636366;fill:none;stroke-width:1.8;stroke-linecap:round}
+.notif-badge{
+  position:absolute;top:-3px;right:-3px;width:16px;height:16px;
+  background:#FF3B30;border-radius:50%;font-size:9px;font-weight:700;
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  border:2px solid #F2F2F7;
+}
+.topbar-user{display:flex;align-items:center;gap:8px}
+.topbar-avatar{
+  width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(135deg,#007AFF,#5856D6);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:#fff;
+}
+.topbar-name{font-size:12px;font-weight:600;color:#1C1C1E}
+
+/* ── Content area ── */
+.content{flex:1;overflow:hidden;position:relative;padding:20px}
+
+/* ── Scenes ── */
+.scene{
+  position:absolute;inset:0;padding:20px;
+  opacity:0;transform:translateY(10px);
+  transition:opacity .5s cubic-bezier(.23,1,.32,1),transform .5s cubic-bezier(.23,1,.32,1);
+  pointer-events:none;overflow:hidden;
+}
+.scene.active{opacity:1;transform:translateY(0);pointer-events:all}
+
+/* ── Glass card ── */
+.glass{
+  background:rgba(255,255,255,.6);
+  backdrop-filter:blur(24px) saturate(180%);
+  border:1px solid rgba(255,255,255,.45);
+  border-radius:16px;
+  box-shadow:0 8px 32px rgba(0,0,0,.06),inset 0 .5px 0 rgba(255,255,255,.5);
+}
+
+/* ── KPI cards ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.kpi{padding:16px;border-radius:16px;position:relative;overflow:hidden}
+.kpi-icon-wrap{
+  width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;margin-bottom:10px;
+}
+.kpi-icon-wrap svg{width:17px;height:17px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.kpi-val{font-size:26px;font-weight:800;color:#1C1C1E;line-height:1;margin-bottom:3px;font-family:'Inter',sans-serif}
+.kpi-label{font-size:11px;color:#636366;font-weight:500}
+.kpi-sub{font-size:11px;font-weight:500;margin-top:4px}
+.kpi-trend{position:absolute;bottom:12px;right:12px;display:flex;gap:2px;align-items:flex-end}
+.kpi-trend span{width:4px;border-radius:2px;background:currentColor;opacity:.3}
+.kpi-trend span:last-child{opacity:1}
+
+/* ── Hero strip ── */
+.hero-strip{
+  background:rgba(20,20,24,.92);border-radius:20px;
+  border:1px solid rgba(255,255,255,.05);
+  padding:22px 28px;margin-bottom:16px;position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:space-between;
+  min-height:90px;
+}
+.hero-dots{
+  position:absolute;inset:0;opacity:.03;
+  background-image:radial-gradient(circle,rgba(255,255,255,.8) 1px,transparent 1px);
+  background-size:24px 24px;
+}
+.hero-glow{
+  position:absolute;width:300px;height:300px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,122,255,.25),transparent 70%);
+  right:-60px;top:-80px;
+}
+.hero-text{position:relative;z-index:1}
+.hero-eyebrow{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:6px}
+.hero-name{font-size:22px;font-weight:800;color:#fff;letter-spacing:-.3px}
+.hero-sub{font-size:12px;color:rgba(255,255,255,.45);margin-top:4px}
+.hero-quick-btns{display:flex;gap:8px;position:relative;z-index:1}
+.hero-btn{
+  height:34px;padding:0 14px;border-radius:10px;border:none;cursor:pointer;
+  font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;
+}
+.hero-btn-primary{background:#007AFF;color:#fff}
+.hero-btn-ghost{background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.12)}
+
+/* ── Activity / Recent ── */
+.section-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.section-title{font-size:13px;font-weight:700;color:#1C1C1E;margin-bottom:10px}
+.activity-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.04)}
+.activity-item:last-child{border-bottom:none}
+.a-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.a-dot.green{background:#34C759}
+.a-dot.blue{background:#007AFF}
+.a-dot.orange{background:#FF9500}
+.a-dot.red{background:#FF3B30}
+.a-text{font-size:12px;color:#1C1C1E;flex:1}
+.a-text b{font-weight:600}
+.a-time{font-size:11px;color:#AEAEB2;flex-shrink:0}
+
+/* ── Page header ── */
+.page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.page-hdr h2{font-size:20px;font-weight:800;color:#1C1C1E}
+.page-hdr p{font-size:12px;color:#AEAEB2;margin-top:2px}
+.hdr-btns{display:flex;gap:8px}
+.btn{height:34px;padding:0 14px;border-radius:10px;border:none;cursor:pointer;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px}
+.btn-primary{background:#007AFF;color:#fff;box-shadow:0 4px 12px rgba(0,122,255,.35)}
+.btn-ghost{background:rgba(255,255,255,.7);color:#007AFF;border:1px solid rgba(0,122,255,.25)}
+
+/* ── Filter bar ── */
+.filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.search-wrap{
+  flex:1;max-width:260px;height:34px;
+  background:rgba(255,255,255,.7);border:1px solid rgba(0,0,0,.08);
+  border-radius:10px;display:flex;align-items:center;gap:8px;padding:0 12px;
+}
+.search-wrap svg{width:14px;height:14px;stroke:#AEAEB2;fill:none;stroke-width:2;stroke-linecap:round;flex-shrink:0}
+.search-wrap span{font-size:12px;color:#1C1C1E}
+.chip{
+  height:30px;padding:0 12px;border-radius:8px;font-size:11px;font-weight:600;
+  border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.7);color:#636366;cursor:pointer;
+  display:flex;align-items:center;
+}
+.chip.active{background:#007AFF;color:#fff;border-color:#007AFF}
+
+/* ── Asset table ── */
+.asset-table{border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.45)}
+.at-head{
+  display:grid;grid-template-columns:24px 1fr 100px 90px 80px 100px 80px;
+  gap:8px;padding:10px 14px;
+  background:rgba(255,255,255,.4);border-bottom:1px solid rgba(0,0,0,.06);
+}
+.at-head span{font-size:11px;font-weight:600;color:#AEAEB2;text-transform:uppercase;letter-spacing:.04em}
+.at-row{
+  display:grid;grid-template-columns:24px 1fr 100px 90px 80px 100px 80px;
+  gap:8px;padding:10px 14px;align-items:center;
+  background:rgba(255,255,255,.5);border-bottom:1px solid rgba(0,0,0,.04);
+  transition:background .15s ease;
+}
+.at-row:last-child{border-bottom:none}
+.at-row.selected{background:rgba(0,122,255,.06);border-bottom:1px solid rgba(0,122,255,.1)}
+.at-row:hover{background:rgba(255,255,255,.8)}
+.at-check{width:16px;height:16px;border-radius:5px;border:1.5px solid rgba(0,0,0,.15);background:#fff;display:flex;align-items:center;justify-content:center}
+.at-check.checked{background:#007AFF;border-color:#007AFF}
+.at-check.checked::after{content:'';width:8px;height:5px;border-left:1.5px solid #fff;border-bottom:1.5px solid #fff;transform:rotate(-45deg) translateY(-1px);display:block}
+.asset-name{font-size:12px;font-weight:600;color:#1C1C1E}
+.asset-code{font-size:10px;color:#AEAEB2;font-family:'JetBrains Mono',monospace;margin-top:1px}
+.cat-badge{
+  font-size:10px;font-weight:500;padding:3px 7px;border-radius:6px;
+  background:rgba(0,122,255,.08);color:#007AFF;display:inline-flex;align-items:center;
+}
+.status-badge{
+  font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;
+  display:inline-flex;align-items:center;gap:4px;
+}
+.status-badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
+.s-available{background:#d1fae5;color:#059669}
+.s-assigned{background:#dbeafe;color:#2563EB}
+.s-maintenance{background:#fff7ed;color:#d97706}
+.s-retired{background:#fee2e2;color:#dc2626}
+.at-val{font-size:12px;color:#1C1C1E;font-weight:500}
+.qr-icon{width:26px;height:26px;border-radius:7px;background:rgba(0,0,0,.04);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.qr-icon svg{width:14px;height:14px;fill:none;stroke:#007AFF;stroke-width:1.8;stroke-linecap:round}
+
+/* ── QR Generator scene ── */
+.gen-layout{display:grid;grid-template-columns:1fr 320px;gap:16px;height:100%}
+.gen-asset-card{padding:16px}
+.gen-qr-panel{display:flex;flex-direction:column;align-items:center;gap:14px;padding:24px}
+.qr-wrap{
+  width:160px;height:160px;background:#fff;border-radius:12px;
+  padding:10px;border:1px solid rgba(0,0,0,.08);
+  box-shadow:0 4px 20px rgba(0,0,0,.08);
+  animation:qrReveal .6s cubic-bezier(.23,1,.32,1) .3s both;
+}
+@keyframes qrReveal{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+.qr-svg{width:100%;height:100%}
+.bc-wrap{width:100%;height:48px;padding:6px;background:#fff;border-radius:8px;border:1px solid rgba(0,0,0,.08)}
+.bc-bars{width:100%;height:100%;display:flex;align-items:center;gap:.5px;padding:4px}
+.bc-bar{flex:1;background:#1C1C1E;border-radius:1px}
+.dl-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}
+.dl-btn{height:34px;border-radius:10px;font-size:12px;font-weight:600;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.dl-btn-primary{background:#007AFF;color:#fff}
+.dl-btn-ghost{background:rgba(255,255,255,.8);color:#1C1C1E;border:1px solid rgba(0,0,0,.1)}
+.gen-field{margin-bottom:10px}
+.gen-field label{font-size:11px;font-weight:600;color:#636366;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:4px}
+.gen-field .val{font-size:13px;color:#1C1C1E;font-weight:600}
+.gen-field .val.mono{font-family:'JetBrains Mono',monospace;font-size:12px;color:#007AFF}
+.gen-status-row{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;background:rgba(0,0,0,.03);margin-top:4px}
+
+/* ── Scanner scene ── */
+.scanner-layout{display:flex;flex-direction:column;align-items:center;padding-top:10px;gap:16px}
+.viewfinder{
+  width:220px;height:220px;position:relative;border-radius:20px;overflow:hidden;
+  background:rgba(0,0,0,.85);box-shadow:0 8px 32px rgba(0,0,0,.25);
+}
+.vf-corners{position:absolute;inset:0}
+.vf-corner{position:absolute;width:28px;height:28px;border-color:#007AFF;border-style:solid}
+.vf-corner.tl{top:12px;left:12px;border-width:3px 0 0 3px;border-radius:3px 0 0 0}
+.vf-corner.tr{top:12px;right:12px;border-width:3px 3px 0 0;border-radius:0 3px 0 0}
+.vf-corner.bl{bottom:12px;left:12px;border-width:0 0 3px 3px;border-radius:0 0 0 3px}
+.vf-corner.br{bottom:12px;right:12px;border-width:0 3px 3px 0;border-radius:0 0 3px 0}
+.scan-line{
+  position:absolute;left:12px;right:12px;height:2px;
+  background:linear-gradient(90deg,transparent,#007AFF,transparent);
+  box-shadow:0 0 8px rgba(0,122,255,.8);
+  animation:scanMove 2s ease-in-out infinite;top:12px;
+}
+@keyframes scanMove{0%,100%{top:12px;opacity:.8}50%{top:calc(100% - 14px);opacity:1}}
+.vf-inner-text{
+  position:absolute;bottom:16px;left:0;right:0;text-align:center;
+  font-size:11px;color:rgba(255,255,255,.5);font-weight:500;
+}
+.scan-result{
+  width:100%;max-width:420px;padding:14px 16px;border-radius:14px;
+  animation:resultSlide .5s cubic-bezier(.23,1,.32,1) both;
+  display:flex;align-items:center;gap:12px;
+}
+@keyframes resultSlide{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.result-icon{
+  width:44px;height:44px;border-radius:12px;flex-shrink:0;
+  background:rgba(52,199,89,.12);display:flex;align-items:center;justify-content:center;
+}
+.result-icon svg{width:20px;height:20px;fill:none;stroke:#34C759;stroke-width:2.2;stroke-linecap:round}
+.result-info{flex:1}
+.result-name{font-size:14px;font-weight:700;color:#1C1C1E}
+.result-code{font-size:11px;font-family:'JetBrains Mono',monospace;color:#AEAEB2;margin-top:1px}
+.result-row{display:flex;align-items:center;gap:12px;margin-top:6px;flex-wrap:wrap}
+.result-pill{font-size:11px;font-weight:500;padding:3px 8px;border-radius:20px}
+.rp-green{background:#d1fae5;color:#059669}
+.rp-blue{background:#dbeafe;color:#2563EB}
+.assigned-chip{display:flex;align-items:center;gap:6px;font-size:12px;color:#636366}
+.assigned-avatar{width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#5AC8FA,#007AFF);font-size:8px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center}
+
+/* ── Requests scene ── */
+.req-tabs{display:flex;gap:4px;margin-bottom:12px;background:rgba(255,255,255,.5);padding:4px;border-radius:12px;width:fit-content;border:1px solid rgba(0,0,0,.06)}
+.req-tab{padding:5px 14px;border-radius:8px;font-size:12px;font-weight:600;color:#636366;cursor:pointer}
+.req-tab.active{background:#fff;color:#1C1C1E;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.req-card{padding:14px 16px;margin-bottom:8px;border-radius:14px}
+.req-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.req-title{font-size:13px;font-weight:700;color:#1C1C1E}
+.req-meta{font-size:11px;color:#AEAEB2;margin-top:2px}
+.req-badge{font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px}
+.req-pending{background:rgba(255,149,0,.12);color:#FF9500}
+.req-approved{background:rgba(52,199,89,.12);color:#34C759}
+.req-rejected{background:rgba(255,59,48,.12);color:#FF3B30}
+.req-body{font-size:12px;color:#636366;margin-bottom:10px;line-height:1.5}
+.req-actions{display:flex;gap:8px}
+.req-btn{height:30px;padding:0 12px;border-radius:8px;font-size:12px;font-weight:600;border:none;cursor:pointer;display:flex;align-items:center;gap:5px}
+.req-btn-approve{background:#34C759;color:#fff}
+.req-btn-reject{background:rgba(255,59,48,.1);color:#FF3B30;border:1px solid rgba(255,59,48,.2)}
+.req-timeline{display:flex;flex-direction:column;gap:0;margin-top:10px}
+.tl-item{display:flex;gap:10px;align-items:flex-start}
+.tl-dot-wrap{display:flex;flex-direction:column;align-items:center;gap:0}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:2px}
+.tl-dot.done{background:#007AFF}
+.tl-dot.pending{background:#FF9500}
+.tl-dot.empty{background:rgba(0,0,0,.1);border:1.5px solid rgba(0,0,0,.15)}
+.tl-line{width:1.5px;height:16px;background:rgba(0,0,0,.1);flex-shrink:0}
+.tl-info{padding-bottom:12px}
+.tl-label{font-size:11px;font-weight:600;color:#1C1C1E}
+.tl-sub{font-size:10px;color:#AEAEB2;margin-top:1px}
+
+/* ── Reports scene ── */
+.reports-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;height:100%}
+.chart-section{padding:16px;display:flex;flex-direction:column}
+.chart-title{font-size:13px;font-weight:700;color:#1C1C1E;margin-bottom:12px}
+.bar-chart{display:flex;align-items:flex-end;gap:8px;height:120px;padding-bottom:4px}
+.bar-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+.bar{width:100%;border-radius:6px 6px 0 0;transition:height .6s cubic-bezier(.23,1,.32,1)}
+.bar-label{font-size:10px;color:#AEAEB2;font-weight:500;text-align:center}
+.bar-val{font-size:11px;font-weight:700;color:#1C1C1E}
+.right-section{display:flex;flex-direction:column;gap:12px}
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mini-stat{padding:12px 14px;border-radius:12px}
+.ms-val{font-size:20px;font-weight:800;color:#1C1C1E;line-height:1}
+.ms-label{font-size:11px;color:#636366;margin-top:3px}
+.ms-trend{font-size:10px;font-weight:600;margin-top:4px}
+.ms-up{color:#34C759}.ms-down{color:#FF3B30}
+.health-section{padding:14px}
+.health-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(0,0,0,.04)}
+.health-row:last-child{border-bottom:none}
+.health-label{font-size:12px;color:#1C1C1E;font-weight:500}
+.health-val{font-size:11px;font-weight:700}
+.health-bar-wrap{flex:1;margin:0 12px;height:6px;background:rgba(0,0,0,.06);border-radius:3px;overflow:hidden}
+.health-bar{height:100%;border-radius:3px;transition:width 1s cubic-bezier(.23,1,.32,1)}
+
+/* ── Floating callout ── */
+.callout{
+  position:absolute;background:rgba(10,10,30,.85);color:#fff;
+  border:1px solid rgba(255,255,255,.12);border-radius:10px;
+  padding:7px 12px;font-size:11px;font-weight:500;pointer-events:none;z-index:100;
+  backdrop-filter:blur(12px);white-space:nowrap;
+  opacity:0;
+}
+.callout-arrow{
+  position:absolute;width:0;height:0;
+  border:6px solid transparent;
+}
+.scene.active .callout{animation:calloutPop .35s cubic-bezier(.34,1.56,.64,1) 1.4s forwards}
+@keyframes calloutPop{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+
+/* ── Progress bar ── */
+.progress-strip{
+  position:absolute;bottom:0;left:0;right:0;height:3px;
+  background:rgba(0,0,0,.06);
+}
+.progress-fill{height:100%;background:#007AFF;width:0%;transition:none}
+.progress-fill.animated{transition:width var(--dur) linear}
+
+/* ── Scene progress dots ── */
+.scene-dots{
+  position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+  display:flex;gap:5px;z-index:20;
+}
+.sd{width:6px;height:6px;border-radius:3px;background:rgba(0,0,0,.15);transition:all .3s ease}
+.sd.active{background:#007AFF;width:18px}
+
+/* ── Scene label ── */
+.scene-label{
+  position:absolute;top:16px;right:16px;
+  background:rgba(0,0,0,.6);backdrop-filter:blur(12px);
+  color:#fff;font-size:10px;font-weight:600;padding:5px 10px;border-radius:20px;
+  border:1px solid rgba(255,255,255,.1);letter-spacing:.05em;text-transform:uppercase;
+  opacity:0;animation:labelFade 2.5s ease forwards;
+  z-index:50;
+}
+@keyframes labelFade{0%{opacity:0}15%{opacity:1}70%{opacity:1}100%{opacity:0}}
+
+/* ── Animations ── */
+@keyframes countUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.kpi-val{animation:countUp .4s ease both}
+.at-row{animation:fadeUp .35s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.req-card{animation:fadeUp .4s ease both}
+.bar{animation:barGrow .8s cubic-bezier(.23,1,.32,1) .3s both}
+@keyframes barGrow{from{height:0!important}to{}}
+
+/* staggered delays */
+.kpi:nth-child(1){animation-delay:.05s}
+.kpi:nth-child(2){animation-delay:.1s}
+.kpi:nth-child(3){animation-delay:.15s}
+.kpi:nth-child(4){animation-delay:.2s}
+.at-row:nth-child(1){animation-delay:.05s}.at-row:nth-child(2){animation-delay:.1s}
+.at-row:nth-child(3){animation-delay:.15s}.at-row:nth-child(4){animation-delay:.2s}
+.at-row:nth-child(5){animation-delay:.25s}.at-row:nth-child(6){animation-delay:.3s}
+.req-card:nth-child(1){animation-delay:.05s}.req-card:nth-child(2){animation-delay:.15s}.req-card:nth-child(3){animation-delay:.25s}
+.bar:nth-child(1){animation-delay:.1s}.bar:nth-child(2){animation-delay:.2s}
+.bar:nth-child(3){animation-delay:.3s}.bar:nth-child(4){animation-delay:.4s}
+.bar:nth-child(5){animation-delay:.5s}
+
+/* Reset bar animation each time scene becomes active */
+.scene.active .bar{animation:barGrow .8s cubic-bezier(.23,1,.32,1) both}
+</style>
+</head>
+<body>
+
+<div class="brand-header">
+  <h1>AssetFlow Pro</h1>
+  <p>Enterprise Asset Management Platform &mdash; by Fristine Tech</p>
+</div>
+
+<div class="browser">
+  <!-- Browser chrome -->
+  <div class="browser-chrome">
+    <div class="traffic-lights">
+      <div class="tl tl-red"></div>
+      <div class="tl tl-yellow"></div>
+      <div class="tl tl-green"></div>
+    </div>
+    <div class="url-bar">
+      <span class="lock">&#128274;</span>
+      <span>assetflow.fristinetech.com</span>
+    </div>
+  </div>
+
+  <!-- App viewport -->
+  <div class="app">
+    <!-- Background orbs -->
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+
+    <!-- Floating dock -->
+    <div class="dock">
+      <div class="dock-logo">AF</div>
+      <!-- Dashboard -->
+      <div class="dock-item active" id="di-0">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <div class="tooltip">Dashboard</div>
+      </div>
+      <!-- Assets -->
+      <div class="dock-item" id="di-1">
+        <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        <div class="tooltip">Assets</div>
+      </div>
+      <!-- Generate -->
+      <div class="dock-item" id="di-2">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="3" y="15" width="6" height="6" rx="1"/><rect x="15" y="3" width="6" height="6" rx="1"/><path d="M15 15h2v2h-2zm0 4h2v2h-2zm4-4h2v2h-2zm0 4h2v2h-2z"/></svg>
+        <div class="tooltip">Generate Codes</div>
+      </div>
+      <!-- Scanner -->
+      <div class="dock-item" id="di-3">
+        <svg viewBox="0 0 24 24"><polyline points="23 7 23 1 17 1"/><line x1="23" y1="1" x2="16" y2="8"/><polyline points="1 7 1 1 7 1"/><line x1="1" y1="1" x2="8" y2="8"/><polyline points="23 17 23 23 17 23"/><line x1="23" y1="23" x2="16" y2="16"/><polyline points="1 17 1 23 7 23"/><line x1="1" y1="23" x2="8" y2="16"/></svg>
+        <div class="tooltip">Scanner</div>
+      </div>
+      <!-- Requests -->
+      <div class="dock-item" id="di-4">
+        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        <div class="tooltip">Requests</div>
+      </div>
+      <!-- Reports -->
+      <div class="dock-item" id="di-5">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <div class="tooltip">Reports</div>
+      </div>
+      <div class="dock-sep"></div>
+      <div class="dock-item">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        <div class="tooltip">Settings</div>
+      </div>
+      <div class="dock-bottom">
+        <div class="dock-avatar">T</div>
+      </div>
+    </div>
+
+    <!-- Main area -->
+    <div class="main">
+      <!-- Topbar -->
+      <div class="topbar">
+        <div class="topbar-search">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span>Search assets, users…</span>
+        </div>
+        <div class="topbar-right">
+          <div class="topbar-bell">
+            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+            <div class="notif-badge">3</div>
+          </div>
+          <div class="topbar-user">
+            <div class="topbar-avatar">T</div>
+            <div class="topbar-name">Tanuj R.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="content">
+
+        <!-- ════ SCENE 1: DASHBOARD ════ -->
+        <div class="scene active" id="s0">
+          <div class="scene-label">Dashboard</div>
+
+          <!-- Hero strip -->
+          <div class="hero-strip">
+            <div class="hero-dots"></div>
+            <div class="hero-glow"></div>
+            <div class="hero-text">
+              <div class="hero-eyebrow">Welcome back</div>
+              <div class="hero-name">Good morning, Tanuj 👋</div>
+              <div class="hero-sub">Sunday, June 1, 2026 &nbsp;·&nbsp; Super Admin</div>
+            </div>
+            <div class="hero-quick-btns">
+              <button class="hero-btn hero-btn-primary">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add Asset
+              </button>
+              <button class="hero-btn hero-btn-ghost">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 7 23 1 17 1"/><line x1="23" y1="1" x2="16" y2="8"/><polyline points="1 7 1 1 7 1"/><line x1="1" y1="1" x2="8" y2="8"/><polyline points="23 17 23 23 17 23"/><polyline points="1 17 1 23 7 23"/></svg>
+                Scan
+              </button>
+            </div>
+          </div>
+
+          <!-- KPI cards -->
+          <div class="kpi-grid">
+            <div class="kpi glass" style="border-top:3px solid #007AFF">
+              <div class="kpi-icon-wrap" style="background:rgba(0,122,255,.1)">
+                <svg viewBox="0 0 24 24" stroke="#007AFF"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+              </div>
+              <div class="kpi-val" id="kv0">247</div>
+              <div class="kpi-label">Total Assets</div>
+              <div class="kpi-sub" style="color:#007AFF">+12 this month</div>
+              <div class="kpi-trend" style="color:#007AFF">
+                <span style="height:6px"></span><span style="height:9px"></span><span style="height:7px"></span><span style="height:11px"></span><span style="height:14px"></span>
+              </div>
+            </div>
+            <div class="kpi glass" style="border-top:3px solid #34C759">
+              <div class="kpi-icon-wrap" style="background:rgba(52,199,89,.1)">
+                <svg viewBox="0 0 24 24" stroke="#34C759"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+              </div>
+              <div class="kpi-val">198</div>
+              <div class="kpi-label">Assigned</div>
+              <div class="kpi-sub" style="color:#34C759">80% utilization</div>
+              <div class="kpi-trend" style="color:#34C759">
+                <span style="height:8px"></span><span style="height:10px"></span><span style="height:9px"></span><span style="height:13px"></span><span style="height:15px"></span>
+              </div>
+            </div>
+            <div class="kpi glass" style="border-top:3px solid #FF9500">
+              <div class="kpi-icon-wrap" style="background:rgba(255,149,0,.1)">
+                <svg viewBox="0 0 24 24" stroke="#FF9500"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+              </div>
+              <div class="kpi-val">14</div>
+              <div class="kpi-label">Pending Requests</div>
+              <div class="kpi-sub" style="color:#FF9500">3 need your review</div>
+              <div class="kpi-trend" style="color:#FF9500">
+                <span style="height:12px"></span><span style="height:8px"></span><span style="height:14px"></span><span style="height:10px"></span><span style="height:16px"></span>
+              </div>
+            </div>
+            <div class="kpi glass" style="border-top:3px solid #5856D6">
+              <div class="kpi-icon-wrap" style="background:rgba(88,86,214,.1)">
+                <svg viewBox="0 0 24 24" stroke="#5856D6"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+              </div>
+              <div class="kpi-val">$485K</div>
+              <div class="kpi-label">Asset Value</div>
+              <div class="kpi-sub" style="color:#5856D6">FY 2026</div>
+              <div class="kpi-trend" style="color:#5856D6">
+                <span style="height:7px"></span><span style="height:10px"></span><span style="height:12px"></span><span style="height:11px"></span><span style="height:15px"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent activity -->
+          <div class="section-row">
+            <div class="glass" style="padding:14px 16px">
+              <div class="section-title">Recent Activity</div>
+              <div class="activity-item"><div class="a-dot green"></div><div class="a-text"><b>Dell XPS 15</b> assigned to Priya Mehta</div><div class="a-time">2m</div></div>
+              <div class="activity-item"><div class="a-dot blue"></div><div class="a-text">Request <b>#REQ-041</b> approved by you</div><div class="a-time">18m</div></div>
+              <div class="activity-item"><div class="a-dot orange"></div><div class="a-text"><b>HP LaserJet Pro</b> sent to maintenance</div><div class="a-time">1h</div></div>
+              <div class="activity-item"><div class="a-dot green"></div><div class="a-text"><b>MacBook Pro 16"</b> asset created</div><div class="a-time">2h</div></div>
+              <div class="activity-item" style="border:none"><div class="a-dot red"></div><div class="a-text">Request <b>#REQ-039</b> rejected</div><div class="a-time">3h</div></div>
+            </div>
+            <div class="glass" style="padding:14px 16px">
+              <div class="section-title">Asset Status Breakdown</div>
+              <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+                <div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="font-weight:600;color:#1C1C1E">Assigned</span><span style="color:#34C759;font-weight:700">198</span></div><div style="height:6px;background:rgba(0,0,0,.06);border-radius:3px"><div style="width:80%;height:100%;background:#34C759;border-radius:3px"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="font-weight:600;color:#1C1C1E">Available</span><span style="color:#5AC8FA;font-weight:700">35</span></div><div style="height:6px;background:rgba(0,0,0,.06);border-radius:3px"><div style="width:14%;height:100%;background:#5AC8FA;border-radius:3px"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="font-weight:600;color:#1C1C1E">Maintenance</span><span style="color:#FF9500;font-weight:700">10</span></div><div style="height:6px;background:rgba(0,0,0,.06);border-radius:3px"><div style="width:4%;height:100%;background:#FF9500;border-radius:3px"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="font-weight:600;color:#1C1C1E">Retired</span><span style="color:#FF3B30;font-weight:700">4</span></div><div style="height:6px;background:rgba(0,0,0,.06);border-radius:3px"><div style="width:1.6%;height:100%;background:#FF3B30;border-radius:3px"></div></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Callout -->
+          <div class="callout" style="bottom:52px;left:80px">Live KPI dashboard with real-time asset counts</div>
+        </div>
+
+        <!-- ════ SCENE 2: ASSETS ════ -->
+        <div class="scene" id="s1">
+          <div class="scene-label">Asset Management</div>
+          <div class="page-hdr">
+            <div><h2>Assets</h2><p>247 registered assets across all categories</p></div>
+            <div class="hdr-btns">
+              <button class="btn btn-ghost">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M23 7 23 1 17 1M23 1 16 8M1 7 1 1 7 1M1 1 8 8"/></svg>
+                Scan
+              </button>
+              <button class="btn btn-primary">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add Asset
+              </button>
+            </div>
+          </div>
+          <div class="filter-bar">
+            <div class="search-wrap">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <span>Dell XPS</span>
+            </div>
+            <div class="chip active">All</div>
+            <div class="chip">Available</div>
+            <div class="chip">Assigned</div>
+            <div class="chip">Maintenance</div>
+          </div>
+          <div class="asset-table glass">
+            <div class="at-head">
+              <span></span><span>Asset</span><span>Category</span><span>Status</span><span>Value</span><span>Assigned To</span><span></span>
+            </div>
+            <div class="at-row selected">
+              <div class="at-check checked"></div>
+              <div><div class="asset-name">Dell XPS 15 Laptop</div><div class="asset-code">AF-2024-0018</div></div>
+              <div><div class="cat-badge">Laptop</div></div>
+              <div><div class="status-badge s-assigned">Assigned</div></div>
+              <div class="at-val">$1,299</div>
+              <div style="font-size:12px;color:#636366">Priya Mehta</div>
+              <div class="qr-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><path d="M16 16h2v2h-2zm0 3h2v2h-2zm3-3h2v2h-2zm0 3h2v2h-2z"/></svg></div>
+            </div>
+            <div class="at-row">
+              <div class="at-check"></div>
+              <div><div class="asset-name">MacBook Pro 16"</div><div class="asset-code">AF-2024-0007</div></div>
+              <div><div class="cat-badge">Laptop</div></div>
+              <div><div class="status-badge s-available">Available</div></div>
+              <div class="at-val">$2,499</div>
+              <div style="font-size:12px;color:#AEAEB2">—</div>
+              <div class="qr-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><path d="M16 16h2v2h-2zm0 3h2v2h-2zm3-3h2v2h-2zm0 3h2v2h-2z"/></svg></div>
+            </div>
+            <div class="at-row">
+              <div class="at-check"></div>
+              <div><div class="asset-name">HP LaserJet Pro M404</div><div class="asset-code">AF-2024-0033</div></div>
+              <div><div class="cat-badge" style="background:rgba(255,149,0,.08);color:#FF9500">Printer</div></div>
+              <div><div class="status-badge s-maintenance">Maintenance</div></div>
+              <div class="at-val">$349</div>
+              <div style="font-size:12px;color:#AEAEB2">—</div>
+              <div class="qr-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><path d="M16 16h2v2h-2zm0 3h2v2h-2zm3-3h2v2h-2zm0 3h2v2h-2z"/></svg></div>
+            </div>
+            <div class="at-row">
+              <div class="at-check"></div>
+              <div><div class="asset-name">Samsung 27" 4K Monitor</div><div class="asset-code">AF-2024-0051</div></div>
+              <div><div class="cat-badge" style="background:rgba(90,200,250,.1);color:#0A84FF">Monitor</div></div>
+              <div><div class="status-badge s-assigned">Assigned</div></div>
+              <div class="at-val">$599</div>
+              <div style="font-size:12px;color:#636366">Rahul Kapoor</div>
+              <div class="qr-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><path d="M16 16h2v2h-2zm0 3h2v2h-2zm3-3h2v2h-2zm0 3h2v2h-2z"/></svg></div>
+            </div>
+            <div class="at-row">
+              <div class="at-check"></div>
+              <div><div class="asset-name">Cisco IP Phone 8841</div><div class="asset-code">AF-2024-0062</div></div>
+              <div><div class="cat-badge" style="background:rgba(52,199,89,.08);color:#34C759">Telephone</div></div>
+              <div><div class="status-badge s-available">Available</div></div>
+              <div class="at-val">$219</div>
+              <div style="font-size:12px;color:#AEAEB2">—</div>
+              <div class="qr-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><path d="M16 16h2v2h-2zm0 3h2v2h-2zm3-3h2v2h-2zm0 3h2v2h-2z"/></svg></div>
+            </div>
+          </div>
+          <div class="callout" style="top:100px;right:24px">Bulk select, filter &amp; manage all assets</div>
+        </div>
+
+        <!-- ════ SCENE 3: QR GENERATOR ════ -->
+        <div class="scene" id="s2">
+          <div class="scene-label">Code Generator</div>
+          <div class="page-hdr" style="margin-bottom:12px">
+            <div><h2>Generate Codes</h2><p>Create QR codes &amp; barcodes for assets</p></div>
+          </div>
+          <div class="gen-layout">
+            <div class="glass" style="padding:20px">
+              <div class="gen-field"><label>Asset Name</label><div class="val">Dell XPS 15 Laptop</div></div>
+              <div class="gen-field"><label>Asset Code</label><div class="val mono">AF-2024-0018</div></div>
+              <div class="gen-field"><label>Category</label><div class="val">Laptop</div></div>
+              <div class="gen-field"><label>Serial Number</label><div class="val mono">DL-XPS15-8849221</div></div>
+              <div class="gen-status-row">
+                <div class="status-badge s-assigned" style="font-size:11px">Assigned</div>
+                <span style="font-size:12px;color:#636366">Priya Mehta &nbsp;·&nbsp; Fristine Tech HQ</span>
+              </div>
+              <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(0,0,0,.06)">
+                <div class="gen-field"><label>QR Payload URL</label>
+                  <div class="val mono" style="font-size:10px;background:rgba(0,0,0,.03);padding:6px 8px;border-radius:8px;color:#5856D6">https://assetflow.fristinetech.com/a/AF-2024-0018</div>
+                </div>
+              </div>
+            </div>
+            <div class="glass gen-qr-panel">
+              <div style="font-size:12px;font-weight:700;color:#1C1C1E">QR Code</div>
+              <div class="qr-wrap">
+                <!-- QR Code SVG -->
+                <svg class="qr-svg" viewBox="0 0 21 21" fill="black" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="21" height="21" fill="white"/>
+                  <!-- TL finder -->
+                  <rect x="0" y="0" width="7" height="7"/><rect x="1" y="1" width="5" height="5" fill="white"/><rect x="2" y="2" width="3" height="3"/>
+                  <!-- TR finder -->
+                  <rect x="14" y="0" width="7" height="7"/><rect x="15" y="1" width="5" height="5" fill="white"/><rect x="16" y="2" width="3" height="3"/>
+                  <!-- BL finder -->
+                  <rect x="0" y="14" width="7" height="7"/><rect x="1" y="15" width="5" height="5" fill="white"/><rect x="2" y="16" width="3" height="3"/>
+                  <!-- Timing -->
+                  <rect x="8" y="6" width="1" height="1"/><rect x="10" y="6" width="1" height="1"/><rect x="12" y="6" width="1" height="1"/>
+                  <rect x="6" y="8" width="1" height="1"/><rect x="6" y="10" width="1" height="1"/><rect x="6" y="12" width="1" height="1"/>
+                  <!-- Data modules -->
+                  <rect x="8" y="0" width="1" height="1"/><rect x="10" y="0" width="1" height="1"/><rect x="12" y="0" width="1" height="1"/>
+                  <rect x="9" y="1" width="1" height="1"/><rect x="11" y="1" width="2" height="1"/>
+                  <rect x="8" y="2" width="2" height="1"/><rect x="11" y="2" width="1" height="1"/>
+                  <rect x="9" y="3" width="1" height="1"/><rect x="12" y="3" width="1" height="1"/>
+                  <rect x="8" y="4" width="1" height="1"/><rect x="10" y="4" width="2" height="1"/>
+                  <rect x="8" y="5" width="1" height="1"/><rect x="11" y="5" width="2" height="1"/>
+                  <rect x="7" y="7" width="1" height="1"/><rect x="9" y="7" width="2" height="1"/><rect x="13" y="7" width="1" height="1"/>
+                  <rect x="7" y="8" width="2" height="1"/><rect x="10" y="8" width="1" height="1"/><rect x="12" y="8" width="2" height="1"/>
+                  <rect x="8" y="9" width="1" height="1"/><rect x="11" y="9" width="1" height="1"/><rect x="13" y="9" width="1" height="1"/>
+                  <rect x="7" y="10" width="1" height="1"/><rect x="9" y="10" width="2" height="1"/><rect x="12" y="10" width="2" height="1"/>
+                  <rect x="8" y="11" width="2" height="1"/><rect x="11" y="11" width="1" height="1"/><rect x="13" y="11" width="1" height="1"/>
+                  <rect x="7" y="12" width="1" height="1"/><rect x="10" y="12" width="2" height="1"/><rect x="13" y="12" width="1" height="1"/>
+                  <rect x="7" y="13" width="2" height="1"/><rect x="11" y="13" width="3" height="1"/>
+                  <rect x="8" y="14" width="1" height="1"/><rect x="10" y="14" width="1" height="1"/><rect x="12" y="14" width="1" height="1"/>
+                  <rect x="7" y="15" width="1" height="1"/><rect x="9" y="15" width="2" height="1"/><rect x="12" y="15" width="2" height="1"/>
+                  <rect x="8" y="16" width="2" height="1"/><rect x="11" y="16" width="1" height="1"/><rect x="13" y="16" width="1" height="1"/>
+                  <rect x="7" y="17" width="1" height="1"/><rect x="10" y="17" width="1" height="1"/><rect x="12" y="17" width="2" height="1"/>
+                  <rect x="8" y="18" width="1" height="1"/><rect x="11" y="18" width="2" height="1"/>
+                  <rect x="7" y="19" width="2" height="1"/><rect x="10" y="19" width="1" height="1"/><rect x="13" y="19" width="1" height="1"/>
+                  <rect x="8" y="20" width="1" height="1"/><rect x="10" y="20" width="2" height="1"/><rect x="13" y="20" width="1" height="1"/>
+                </svg>
+              </div>
+              <div style="font-size:11px;font-weight:500;color:#AEAEB2;text-align:center">AF-2024-0018</div>
+              <!-- Barcode -->
+              <div class="bc-wrap">
+                <div class="bc-bars" id="bc-bars"></div>
+              </div>
+              <div class="dl-btns">
+                <button class="dl-btn dl-btn-primary">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Download
+                </button>
+                <button class="dl-btn dl-btn-ghost">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                  Print
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="callout" style="bottom:24px;right:80px">Auto-generate QR codes &amp; barcodes per asset</div>
+        </div>
+
+        <!-- ════ SCENE 4: SCANNER ════ -->
+        <div class="scene" id="s3">
+          <div class="scene-label">QR Scanner</div>
+          <div class="page-hdr" style="margin-bottom:8px">
+            <div><h2>Scanner</h2><p>Identify any asset instantly with camera</p></div>
+          </div>
+          <div class="scanner-layout">
+            <div class="viewfinder">
+              <div class="vf-corners">
+                <div class="vf-corner tl"></div>
+                <div class="vf-corner tr"></div>
+                <div class="vf-corner bl"></div>
+                <div class="vf-corner br"></div>
+              </div>
+              <div class="scan-line"></div>
+              <div class="vf-inner-text">Point at QR code or barcode</div>
+            </div>
+            <div class="scan-result glass" style="animation-delay:.8s">
+              <div class="result-icon">
+                <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </div>
+              <div class="result-info">
+                <div class="result-name">Dell XPS 15 Laptop</div>
+                <div class="result-code">AF-2024-0018 &nbsp;·&nbsp; S/N: DL-XPS15-8849221</div>
+                <div class="result-row">
+                  <div class="result-pill rp-green">Assigned</div>
+                  <div class="result-pill rp-blue">Laptop</div>
+                  <div class="assigned-chip">
+                    <div class="assigned-avatar">PM</div>
+                    <span>Priya Mehta</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div style="font-size:12px;color:#AEAEB2;text-align:center">Also available as a <b style="color:#007AFF">public scan portal</b> — no login required</div>
+          </div>
+          <div class="callout" style="top:110px;right:24px">Works on mobile &amp; desktop browsers</div>
+        </div>
+
+        <!-- ════ SCENE 5: REQUESTS ════ -->
+        <div class="scene" id="s4">
+          <div class="scene-label">Approval Workflow</div>
+          <div class="page-hdr" style="margin-bottom:8px">
+            <div><h2>Requests</h2><p>Role-based approval workflow</p></div>
+          </div>
+          <div class="req-tabs">
+            <div class="req-tab active">All</div>
+            <div class="req-tab">Inbox <span style="background:#FF9500;color:#fff;border-radius:10px;font-size:9px;padding:1px 5px;margin-left:4px">3</span></div>
+            <div class="req-tab">Mine</div>
+          </div>
+          <!-- Pending request -->
+          <div class="req-card glass">
+            <div class="req-header">
+              <div>
+                <div class="req-title">Asset Assignment Request — MacBook Pro 16"</div>
+                <div class="req-meta">REQ-042 &nbsp;·&nbsp; Submitted by <b>Rahul Kapoor</b> &nbsp;·&nbsp; 25 min ago</div>
+              </div>
+              <div class="req-badge req-pending">Pending</div>
+            </div>
+            <div class="req-body">Requesting assignment of MacBook Pro 16" (AF-2024-0007) for remote development work starting June 2026.</div>
+            <div class="req-actions">
+              <button class="req-btn req-btn-approve">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+                Approve
+              </button>
+              <button class="req-btn req-btn-reject">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                Reject
+              </button>
+            </div>
+          </div>
+          <!-- Approved request -->
+          <div class="req-card glass">
+            <div class="req-header">
+              <div>
+                <div class="req-title">Maintenance Request — HP LaserJet Pro</div>
+                <div class="req-meta">REQ-041 &nbsp;·&nbsp; Submitted by <b>Ananya Sharma</b> &nbsp;·&nbsp; 2h ago</div>
+              </div>
+              <div class="req-badge req-approved">Approved</div>
+            </div>
+            <div class="req-timeline">
+              <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot done"></div><div class="tl-line"></div></div><div class="tl-info"><div class="tl-label">Submitted</div><div class="tl-sub">by Ananya Sharma</div></div></div>
+              <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot done"></div></div><div class="tl-info"><div class="tl-label">Approved</div><div class="tl-sub">by Tanuj R. · 1h ago</div></div></div>
+            </div>
+          </div>
+          <!-- Rejected -->
+          <div class="req-card glass">
+            <div class="req-header">
+              <div>
+                <div class="req-title">Transfer Request — Cisco IP Phone 8841</div>
+                <div class="req-meta">REQ-039 &nbsp;·&nbsp; Submitted by <b>Vikram Singh</b> &nbsp;·&nbsp; 5h ago</div>
+              </div>
+              <div class="req-badge req-rejected">Rejected</div>
+            </div>
+          </div>
+          <div class="callout" style="top:96px;right:24px">Multi-tier approvals: user → admin → super admin</div>
+        </div>
+
+        <!-- ════ SCENE 6: REPORTS ════ -->
+        <div class="scene" id="s5">
+          <div class="scene-label">Analytics &amp; Reports</div>
+          <div class="page-hdr" style="margin-bottom:12px">
+            <div><h2>Reports</h2><p>Asset analytics &amp; system health</p></div>
+          </div>
+          <div class="reports-grid">
+            <div class="glass chart-section">
+              <div class="chart-title">Assets by Category</div>
+              <div class="bar-chart">
+                <div class="bar-wrap"><div class="bar" style="height:85px;background:linear-gradient(180deg,#4F7EFF,#007AFF)"></div><div class="bar-val">68</div><div class="bar-label">Laptop</div></div>
+                <div class="bar-wrap"><div class="bar" style="height:55px;background:linear-gradient(180deg,#34C759,#28a346)"></div><div class="bar-val">44</div><div class="bar-label">Monitor</div></div>
+                <div class="bar-wrap"><div class="bar" style="height:38px;background:linear-gradient(180deg,#FF9500,#e08000)"></div><div class="bar-val">30</div><div class="bar-label">Phone</div></div>
+                <div class="bar-wrap"><div class="bar" style="height:28px;background:linear-gradient(180deg,#9B59F5,#7d3dd9)"></div><div class="bar-val">22</div><div class="bar-label">Tablet</div></div>
+                <div class="bar-wrap"><div class="bar" style="height:22px;background:linear-gradient(180deg,#5AC8FA,#0A84FF)"></div><div class="bar-val">18</div><div class="bar-label">Network</div></div>
+                <div class="bar-wrap"><div class="bar" style="height:18px;background:linear-gradient(180deg,#FF3B58,#cc2040)"></div><div class="bar-val">14</div><div class="bar-label">Printer</div></div>
+              </div>
+            </div>
+            <div class="right-section">
+              <div class="stat-row">
+                <div class="glass mini-stat">
+                  <div class="ms-val">80%</div>
+                  <div class="ms-label">Utilization Rate</div>
+                  <div class="ms-trend ms-up">↑ 5% vs last month</div>
+                </div>
+                <div class="glass mini-stat">
+                  <div class="ms-val">1.8h</div>
+                  <div class="ms-label">Avg Response Time</div>
+                  <div class="ms-trend ms-down">↓ 12min faster</div>
+                </div>
+              </div>
+              <div class="glass health-section">
+                <div class="chart-title" style="margin-bottom:8px">System Health</div>
+                <div class="health-row">
+                  <div class="health-label">API Response</div>
+                  <div class="health-bar-wrap"><div class="health-bar" style="width:94%;background:#34C759"></div></div>
+                  <div class="health-val" style="color:#34C759">94ms</div>
+                </div>
+                <div class="health-row">
+                  <div class="health-label">DB Pool</div>
+                  <div class="health-bar-wrap"><div class="health-bar" style="width:22%;background:#34C759"></div></div>
+                  <div class="health-val" style="color:#34C759">22%</div>
+                </div>
+                <div class="health-row">
+                  <div class="health-label">Storage</div>
+                  <div class="health-bar-wrap"><div class="health-bar" style="width:41%;background:#FF9500"></div></div>
+                  <div class="health-val" style="color:#FF9500">41%</div>
+                </div>
+                <div class="health-row">
+                  <div class="health-label">Memory</div>
+                  <div class="health-bar-wrap"><div class="health-bar" style="width:34%;background:#34C759"></div></div>
+                  <div class="health-val" style="color:#34C759">34%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="callout" style="bottom:32px;left:80px">Real-time analytics &amp; live system observability</div>
+        </div>
+
+      </div><!-- /content -->
+    </div><!-- /main -->
+
+    <!-- Progress dots -->
+    <div class="scene-dots" id="dots"></div>
+
+    <!-- Progress strip -->
+    <div class="progress-strip"><div class="progress-fill" id="progress-fill"></div></div>
+
+  </div><!-- /app -->
+</div><!-- /browser -->
+
+<div style="text-align:center;color:rgba(255,255,255,.25);font-size:11px;margin-top:8px;font-weight:500">
+  106 users &nbsp;·&nbsp; 247 assets &nbsp;·&nbsp; QR/Barcode scanning &nbsp;·&nbsp; Role-based approvals &nbsp;·&nbsp; Live analytics
+</div>
+
+<script>
+const SCENES = 6;
+const DURATION = 4500; // ms per scene
+let current = 0;
+let timer = null;
+
+// Build dots
+const dotsEl = document.getElementById('dots');
+for (let i = 0; i < SCENES; i++) {
+  const d = document.createElement('div');
+  d.className = 'sd' + (i === 0 ? ' active' : '');
+  d.addEventListener('click', () => goTo(i));
+  dotsEl.appendChild(d);
+}
+
+// Build barcode bars (scene 3)
+const bcEl = document.getElementById('bc-bars');
+if (bcEl) {
+  const pattern = [3,1,2,1,3,2,1,1,2,3,1,2,1,3,1,2,2,1,3,1,2,1,1,3,2,1,2,3,1,1,3,2,1,2,1,3,1,2,3,1];
+  pattern.forEach(w => {
+    const b = document.createElement('div');
+    b.className = 'bc-bar';
+    b.style.flexGrow = w;
+    bcEl.appendChild(b);
+  });
+  // white gaps every few bars
+  for (let i = 3; i < bcEl.children.length; i += 4) {
+    if (bcEl.children[i]) bcEl.children[i].style.background = 'white';
+  }
+}
+
+// Dock item IDs
+const dockItems = document.querySelectorAll('.dock-item[id]');
+
+function goTo(n) {
+  const prev = document.getElementById('s' + current);
+  if (prev) prev.classList.remove('active');
+  const prevD = document.getElementById('di-' + current);
+  if (prevD) prevD.classList.remove('active');
+
+  current = ((n % SCENES) + SCENES) % SCENES;
+
+  const next = document.getElementById('s' + current);
+  if (next) next.classList.remove('active'); // force reflow
+  void next?.offsetWidth;
+  if (next) next.classList.add('active');
+
+  const nextD = document.getElementById('di-' + current);
+  if (nextD) nextD.classList.add('active');
+
+  // Update dots
+  document.querySelectorAll('.sd').forEach((d, i) => {
+    d.classList.toggle('active', i === current);
+  });
+
+  // Restart progress bar
+  const fill = document.getElementById('progress-fill');
+  if (fill) {
+    fill.style.transition = 'none';
+    fill.style.width = '0%';
+    void fill.offsetWidth;
+    fill.style.setProperty('--dur', DURATION + 'ms');
+    fill.classList.add('animated');
+    fill.style.transition = 'width ' + DURATION + 'ms linear';
+    fill.style.width = '100%';
+  }
+
+  clearTimeout(timer);
+  timer = setTimeout(() => goTo(current + 1), DURATION);
+}
+
+// Start
+goTo(0);
+</script>
+</body>
+</html>
