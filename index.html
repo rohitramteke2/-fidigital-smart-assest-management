@@ -2749,7 +2749,7 @@ button { cursor: pointer; font-family: inherit; }
                     <div class="gen-bc-box" id="gen-bc-box"></div>
                     <div class="gen-label-style">
                       <label>Scan URL</label>
-                      <div class="gen-url-box" id="gen-url-box">https://fidigital-smart-asset-management.com/a/AF-2024-0018</div>
+                      <div class="gen-url-box" id="gen-url-box">https://fidigital-smart-asset-management.onslate.in/</div>
                     </div>
                     <div class="gen-actions">
                       <button class="gen-act-btn gen-act-p" onclick="showToast('QR code downloaded','success')">
@@ -3510,40 +3510,6 @@ button { cursor: pointer; font-family: inherit; }
     </div>
 
     <!-- Office cards -->
-    <div class="footer-offices">
-
-      <div class="footer-office-card">
-        <div class="footer-office-name">
-          <span class="footer-office-dot"></span>
-          Sydney, Australia
-        </div>
-        <div class="footer-office-row">
-          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          Level 14, 275 Alfred Street, North Sydney NSW 2060
-        </div>
-        <div class="footer-office-row" style="align-items:center;margin-top:-2px">
-          <svg viewBox="0 0 24 24" style="margin-top:0"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 014.89 10.5a19.79 19.79 0 01-3.07-8.67A2 2 0 013.8 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 7.91a16 16 0 006 6l.91-.91a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-          +61 2 8006 0788
-        </div>
-      </div>
-
-      <div class="footer-office-card">
-        <div class="footer-office-name">
-          <span class="footer-office-dot"></span>
-          Pune, India
-        </div>
-        <div class="footer-office-row">
-          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          4th Floor, Amar Avinash Corporate City, Baner, Pune 411045
-        </div>
-        <div class="footer-office-row" style="align-items:center;margin-top:-2px">
-          <svg viewBox="0 0 24 24" style="margin-top:0"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 014.89 10.5a19.79 19.79 0 01-3.07-8.67A2 2 0 013.8 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 7.91a16 16 0 006 6l.91-.91a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-          +91 20 6600 0000
-        </div>
-      </div>
-
-    </div>
-
     <!-- Bottom: copyright + legal -->
     <div class="footer-bottom">
       <span class="footer-copy">© 2026 FI Digital Australia. All rights reserved.</span>
@@ -4081,7 +4047,7 @@ function selectGenAsset(el, name, code) {
   const codeLbl = document.getElementById('gen-asset-code-lbl');
   const urlBox = document.getElementById('gen-url-box');
   if (codeLbl) codeLbl.textContent = code;
-  if (urlBox) urlBox.textContent = 'https://fidigital-smart-asset-management.com/a/' + code;
+  if (urlBox) urlBox.textContent = 'https://fidigital-smart-asset-management.onslate.in/' + code;
   showToast('QR code generated for ' + name, 'success');
 }
 
